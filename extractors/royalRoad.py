@@ -1,3 +1,4 @@
+import json
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -8,6 +9,7 @@ class RoyalRoadExtractor(BaseExtractor):
 
     def get_chapter(self, url: str, count: int) -> Chapter:
         response = requests.get(url)
+        print(url)
         if response.status_code != 200:
             raise RuntimeError(f"Failed to fetch {url}: status {response.status_code}")
 
@@ -37,3 +39,27 @@ class RoyalRoadExtractor(BaseExtractor):
             if cleaned[i - 1] == ' ':
                 cleaned[i] = cleaned[i].upper()
         return ''.join(cleaned)
+
+    def get_book_metadata(self, url: str) -> dict:
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise RuntimeError(f"Failed to fetch {url}: status {response.status_code}")
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        script_tag = soup.find("script", type="application/ld+json")
+
+        if not script_tag:
+            return {"title": None, "author": None, "cover_url": None}
+
+        data = json.loads(script_tag.string)
+
+        author = soup.find("a", href=re.compile(r"^/profile/")).get_text(strip=True)
+        chapter_1 = data["potentialAction"]["target"]["urlTemplate"]
+
+        return {
+            "title": data.get("name"),
+            "description": data.get("description"),
+            "cover_url": data.get("thumbnailUrl"),
+            "chapter_1": chapter_1,
+            "author": author,
+        }
