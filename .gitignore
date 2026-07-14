@@ -7,3 +7,8 @@ Output/
 *.epub
 
 *.ipynb
+
+old/
+
+.idea/
+idea/
