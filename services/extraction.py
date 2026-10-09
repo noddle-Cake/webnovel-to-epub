@@ -1,88 +1,41 @@
-import requests
+from typing import Callable
+from urllib.parse import urldefrag
 
+from extractors.base import ExtractionError
 from extractors.registry import get_extractor
 from services.epub_builder import EpubBuilder
 
 
 class ExtractionService:
+    def __init__(self, extractor_factory=get_extractor):
+        self.extractor_factory = extractor_factory
 
     def detect_book(self, url: str) -> dict:
-        """
-        Retrieve book metadata from supported site.
-        """
+        return self.extractor_factory(url).get_book_metadata(url)
 
-        extractor = get_extractor(url)
-
-        return extractor.get_book_metadata(url)
-
-    from typing import Optional, Callable
-
-    def extract_book(
-            self,
-            url: str,
-            title: str,
-            author: str,
-            chapter_url: str,
-            cover_bytes: Optional[bytes] = None,
-            progress_callback: Optional[Callable] = None,
-    ) -> bytes:
-        """
-        Extract chapters and return EPUB bytes.
-        """
-
-        extractor = get_extractor(url)
-
-
-        # If user didn't upload a cover,
-        # download detected cover
+    def extract_book(self, url: str, title: str, author: str, chapter_url: str,
+                     cover_bytes: bytes | None = None,
+                     progress_callback: Callable[[int, str], None] | None = None) -> bytes:
+        extractor = self.extractor_factory(url)
         if cover_bytes is None:
-
-            metadata = extractor.get_book_metadata(url)
-
-            cover_url = metadata.get("cover_url")
-
+            cover_url = extractor.get_book_metadata(url).get("cover_url")
             if cover_url:
-                response = requests.get(cover_url)
-
-                if response.status_code == 200:
-                    cover_bytes = response.content
-
-
-        builder = EpubBuilder(
-            title,
-            author,
-            cover_bytes,
-        )
-
-
-        count = 1
+                cover_bytes = extractor.fetch(cover_url).content
+        builder = EpubBuilder(title, author, cover_bytes)
+        visited = set()
         next_url = chapter_url
-
-
+        count = 1
         while next_url:
-
-            chapter = extractor.get_chapter(
-                next_url,
-                count
-            )
-
-
-            builder.add_chapter(
-                chapter.title,
-                chapter.html,
-                count,
-            )
-
-
+            next_url = urldefrag(next_url)[0]
+            if not extractor.supports(next_url):
+                raise ExtractionError(f"Chapter navigation left the supported site: {next_url}")
+            if next_url in visited:
+                raise ExtractionError(f"Chapter navigation loop at {next_url}")
+            visited.add(next_url)
+            chapter = extractor.get_chapter(next_url, count)
+            builder.add_chapter(chapter.title, chapter.html, count)
             if progress_callback:
-                progress_callback(
-                    count,
-                    chapter.title
-                )
-
-
+                progress_callback(count, chapter.title)
             next_url = chapter.next_url
             count += 1
-
-
         return builder.finalize()
