@@ -1,156 +1,48 @@
 # Light Novel Extractor
 
-## Running
+Convert supported web novels to EPUB while preserving chapter formatting.
+Currently supports Royal Road.
 
-To run the application:
+## Run
 
-```bash
-python ui/main.py
-Adding New Extractors
+```sh
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m ui.ui_test
+```
 
-An extractor is a custom parser designed to extract book information and chapters from a specific website.
+The NiceGUI interface uses `ExtractionService` for metadata detection and EPUB
+creation. `ui_main.py` is the legacy Streamlit interface.
 
-Extractors generally use tools such as:
+## Add a site
 
-BeautifulSoup (HTML parsing)
-Regex (URL/title parsing)
-Requests (fetching pages)
+1. Add a module in `extractors/` with a class inheriting `BaseExtractor`.
+2. Declare exact supported `hosts`, including `www` if appropriate.
+3. Implement `parse_book(soup, url)` and `parse_chapter(soup, url, count)`.
+4. Import the class and append it to `EXTRACTORS` in `extractors/registry.py`.
+5. Add offline parsing tests with representative HTML, including the final
+   chapter and missing content.
 
-Currently supported sites:
+`parse_book` returns `BookMetadata` with `title`, `author`, `description`,
+`cover_url`, and `chapter_1` (use `None` for unavailable values).
+`parse_chapter` returns the shared `models.chapter.Chapter` with a title,
+HTML body, and `next_url=None` at the end. Raise `ExtractionError` when the
+expected content is missing; do not silently export an empty or blocked page.
 
-Royal Road
-How Extractors Work
+Use `self.link(url, href)` to resolve relative links. Select the reading body
+and explicit next-chapter navigation, rather than relying on button counts or
+URL title guesses. Parsing methods do not fetch pages, so they are easy to test.
+The base class handles HTTP status checks, a 30-second timeout, and a reusable
+session. A custom session can be injected with `Extractor(session=...)`.
 
-The extraction process follows this pattern:
+`ExtractionService` checks chapter hosts and detects repeated URLs to prevent
+navigation loops. `EpubBuilder` uses numbered chapter filenames so repeated
+or path-like titles do not collide.
 
-User provides the homepage URL of a book.
-The extractor detects whether it supports the website.
-The extractor retrieves book metadata from the homepage, such as:
-Title
-Author
-Cover image
-First chapter URL
-The extractor uses the first chapter URL as the starting point.
-The extractor repeatedly:
-Downloads the current chapter page
-Extracts the chapter title
-Extracts the chapter HTML/content while preserving formatting
-Finds the next chapter URL
-This continues until there are no more chapters.
-The collected chapters are passed to the EPUB builder.
-Creating a New Extractor
+## Test
 
-To add support for another website:
-
-Create a new file inside:
-extractors/
-
-Example:
-
-extractors/
-├── base.py
-├── registry.py
-├── royalRoad.py
-└── newSite.py
-Create a class that inherits from BaseExtractor.
-
-Example:
-
-from .base import BaseExtractor, Chapter
-
-
-class NewSiteExtractor(BaseExtractor):
-
-    domain_pattern = r"newsite\.com"
-
-
-    def get_book_metadata(self, url: str) -> dict:
-        # Extract:
-        # title
-        # author
-        # cover
-        # chapter 1 URL
-
-        return {
-            "title": "",
-            "author": "",
-            "cover_url": "",
-            "chapter_1": ""
-        }
-
-
-    def get_chapter(self, url: str, count: int) -> Chapter:
-        # Extract:
-        # chapter title
-        # chapter HTML
-        # next chapter URL
-
-        return Chapter(
-            title="",
-            html="",
-            next_url=""
-        )
-Add the extractor to:
-extractors/registry.py
-
-Example:
-
-from .royalRoad import RoyalRoadExtractor
-from .newSite import NewSiteExtractor
-
-
-EXTRACTORS = [
-    RoyalRoadExtractor,
-    NewSiteExtractor
-]
-Extractor Requirements
-
-Every extractor must implement:
-
-get_book_metadata()
-
-Returns:
-
-{
-    "title": "Book Name",
-    "author": "Author Name",
-    "cover_url": "https://...",
-    "chapter_1": "https://..."
-}
-get_chapter()
-
-Returns:
-
-Chapter(
-    title="Chapter Title",
-    html="<p>Chapter content</p>",
-    next_url="https://..."
-)
-
-next_url should be None when the book has reached the final chapter.
-
-Royal Road Example
-
-The current Royal Road extractor works by:
-
-Book Homepage
-      |
-      v
-Extract metadata
-      |
-      v
-Find Chapter 1 URL
-      |
-      v
-Chapter 1
-      |
-      v
-Extract content + next chapter URL
-      |
-      v
-Chapter 2
-      |
-      v
-Repeat until finished
-
-The extracted HTML is preserved and passed directly into the EPUB builder.
+```sh
+pip install pytest
+python -m pytest tests -q
+```

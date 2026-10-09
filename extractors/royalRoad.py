@@ -1,65 +1,44 @@
 import json
-import re
-import requests
-from bs4 import BeautifulSoup
-from .base import BaseExtractor, Chapter
+
+from .base import BaseExtractor, Chapter, ExtractionError
+
 
 class RoyalRoadExtractor(BaseExtractor):
-    domain_pattern = r"royalroad\.com"
+    hosts = ("royalroad.com", "www.royalroad.com")
 
-    def get_chapter(self, url: str, count: int) -> Chapter:
-        response = requests.get(url)
-        print(url)
-        if response.status_code != 200:
-            raise RuntimeError(f"Failed to fetch {url}: status {response.status_code}")
+    def parse_book(self, soup, url):
+        data = {}
+        for script in soup.select('script[type="application/ld+json"]'):
+            try:
+                candidate = json.loads(script.get_text())
+            except (ValueError, TypeError):
+                continue
+            if isinstance(candidate, dict) and candidate.get("name"):
+                data = candidate
+                break
+        heading = soup.select_one("h1")
+        author = soup.select_one('a[href^="/profile/"]')
+        first = soup.select_one('#chapters tbody a[href*="/chapter/"]')
+        target = data.get("potentialAction", {}).get("target", {})
+        first_href = target.get("urlTemplate") if isinstance(target, dict) else target
+        title = data.get("name") or (heading.get_text(strip=True) if heading else None)
+        if not title:
+            raise ExtractionError(f"Book title missing at {url}")
+        cover = data.get("thumbnailUrl")
+        if isinstance(cover, list):
+            cover = cover[0] if cover else None
+        return {"title": title, "author": author.get_text(strip=True) if author else None,
+                "description": data.get("description"), "cover_url": self.link(url, cover),
+                "chapter_1": self.link(url, first_href or (first.get("href") if first else None))}
 
-        soup = BeautifulSoup(response.content, "html.parser")
-        links = soup.find_all("a", class_="btn btn-primary col-xs-4")
-        content = soup.find_all("div", class_="chapter-inner chapter-content")
-
-        title = self._title_from_url(url, count)
-        html = "\n".join(str(div) for div in content)
-
-        next_url = None
-        if not (len(links) != 3 and count > 1):
-            next_url = "https://www.royalroad.com" + links[-1]["href"]
-
-        return Chapter(title=title, html=html, next_url=next_url)
-
-    @staticmethod
-    def _title_from_url(url: str, count: int) -> str:
-        slug = re.search(r'[^/]+$', url).group(0).strip()
-        match = re.search(r'^[^-]*-[^-]*-(.*)', slug)
-        if match is None:
-            return f"Chapter {count}"
-
-        cleaned = list(re.sub(r'-', ' ', match.group(1)))
-        cleaned[0] = cleaned[0].upper()
-        for i in range(1, len(cleaned)):
-            if cleaned[i - 1] == ' ':
-                cleaned[i] = cleaned[i].upper()
-        return ''.join(cleaned)
-
-    def get_book_metadata(self, url: str) -> dict:
-        response = requests.get(url)
-        if response.status_code != 200:
-            raise RuntimeError(f"Failed to fetch {url}: status {response.status_code}")
-
-        soup = BeautifulSoup(response.content, "html.parser")
-        script_tag = soup.find("script", type="application/ld+json")
-
-        if not script_tag:
-            return {"title": None, "author": None, "cover_url": None}
-
-        data = json.loads(script_tag.string)
-
-        author = soup.find("a", href=re.compile(r"^/profile/")).get_text(strip=True)
-        chapter_1 = data["potentialAction"]["target"]["urlTemplate"]
-
-        return {
-            "title": data.get("name"),
-            "description": data.get("description"),
-            "cover_url": data.get("thumbnailUrl"),
-            "chapter_1": chapter_1,
-            "author": author,
-        }
+    def parse_chapter(self, soup, url, count):
+        content = soup.select_one(".chapter-content")
+        if content is None or not content.get_text(strip=True):
+            raise ExtractionError(f"Chapter content missing at {url}")
+        heading = soup.select_one("h1")
+        next_link = soup.select_one('a[rel~="next"]')
+        if next_link is None:
+            next_link = next((a for a in soup.select('a[href*="/chapter/"]')
+                              if a.get_text(" ", strip=True).casefold() == "next chapter"), None)
+        return Chapter(heading.get_text(strip=True) if heading else f"Chapter {count}",
+                       str(content), self.link(url, next_link.get("href") if next_link else None))

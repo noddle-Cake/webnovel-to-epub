@@ -1,10 +1,11 @@
-import re
+from .base import BaseExtractor
 from .royalRoad import RoyalRoadExtractor
 
-EXTRACTORS = [RoyalRoadExtractor]
+EXTRACTORS: list[type[BaseExtractor]] = [RoyalRoadExtractor]
 
-def get_extractor(url: str):
+
+def get_extractor(url: str, **kwargs) -> BaseExtractor:
     for extractor_cls in EXTRACTORS:
-        if re.search(extractor_cls.domain_pattern, url):
-            return extractor_cls()
+        if extractor_cls.supports(url):
+            return extractor_cls(**kwargs)
     raise ValueError(f"No extractor found for URL: {url}")
