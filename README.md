@@ -1,7 +1,13 @@
 # Light Novel Extractor
 
 Convert supported web novels to EPUB while preserving chapter formatting.
-Currently supports Royal Road.
+Currently supports Royal Road and RoliaScan text novels.
+
+For RoliaScan, paste the novel landing page, for example:
+`https://roliascan.com/manga/the-regressor-and-the-blind-saint-novel/`.
+The extractor reads the first-chapter button and follows explicit next links;
+the dynamically loaded chapter list is not needed. Image-only manga and pages
+without accessible novel text raise an error.
 
 ## Run
 

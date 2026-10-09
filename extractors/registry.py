@@ -1,7 +1,8 @@
 from .base import BaseExtractor
 from .royalRoad import RoyalRoadExtractor
+from .roliascan import RoliaScanExtractor
 
-EXTRACTORS: list[type[BaseExtractor]] = [RoyalRoadExtractor]
+EXTRACTORS: list[type[BaseExtractor]] = [RoyalRoadExtractor, RoliaScanExtractor]
 
 
 def get_extractor(url: str, **kwargs) -> BaseExtractor:
