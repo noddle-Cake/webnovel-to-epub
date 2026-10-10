@@ -311,7 +311,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   leading: Padding(
                     padding: const EdgeInsets.only(top: 16, bottom: 28),
                     child: Tooltip(
-                      message: 'Chapter & Verse',
+                      message: 'Moonleaf',
                       child: Icon(
                         Icons.auto_stories_rounded,
                         size: 30,
@@ -603,7 +603,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Chapter & Verse',
+            'Moonleaf',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall
                 ?.copyWith(fontFamily: 'Fraunces'),
@@ -662,7 +662,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             title: const Text('Open-source licenses'),
             onTap: () => showLicensePage(
               context: context,
-              applicationName: 'Chapter & Verse',
+              applicationName: 'Moonleaf',
             ),
           ),
         ],

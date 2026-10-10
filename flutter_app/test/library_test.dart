@@ -23,6 +23,20 @@ LibraryNovel fixture(
 );
 
 void main() {
+  testWidgets('fresh install has an empty library and Moonleaf branding', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(const NovelApp());
+    await tester.pumpAndSettle();
+    expect((await LibraryStore.load()).novels, isEmpty);
+    expect(find.text('Your next story starts here'), findsOneWidget);
+    expect(find.byKey(const Key('library-grid')), findsNothing);
+    await tester.tap(find.text('More').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Moonleaf'), findsOneWidget);
+  });
+
   test(
     'library, shelves, history and e-reader preference survive reload',
     () async {

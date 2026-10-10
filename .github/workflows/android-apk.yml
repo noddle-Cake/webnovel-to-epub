@@ -123,6 +123,6 @@ jobs:
             gh release upload "$tag" dist/* --clobber
           else
             gh release create "$tag" dist/* --target "$GITHUB_SHA" \
-              --title "Chapter & Verse — Android debug build $GITHUB_RUN_NUMBER" \
+              --title "Moonleaf — Android debug build $GITHUB_RUN_NUMBER" \
               --notes-file release-notes.md --latest
           fi

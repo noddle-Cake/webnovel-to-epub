@@ -5,7 +5,7 @@ class BookArt extends StatelessWidget {
   const BookArt({
     super.key,
     this.title = 'Your next\ngreat read',
-    this.author = 'CHAPTER & VERSE',
+    this.author = 'MOONLEAF',
   });
   final String title;
   final String author;
@@ -73,7 +73,7 @@ class BookArt extends StatelessWidget {
                         width: constraints.maxWidth,
                         child: Text(
                           author.isEmpty
-                              ? 'CHAPTER & VERSE'
+                              ? 'MOONLEAF'
                               : author.toUpperCase(),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,

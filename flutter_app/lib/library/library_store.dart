@@ -79,6 +79,7 @@ class LibraryStore extends ChangeNotifier {
     this.grid = true,
     this.sortByTitle = false,
   }) : _novels = List.of(novels);
+  // Keep the existing private storage key so renaming the app preserves user data.
   static const storageKey = 'chapter_verse_library_v1';
   List<LibraryNovel> _novels;
   List<LibraryNovel> get novels => List.unmodifiable(_novels);
