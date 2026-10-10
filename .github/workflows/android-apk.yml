@@ -38,11 +38,7 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - name: Build downloadable debug APK
-        env:
-          API_BASE_URL: ${{ vars.API_BASE_URL }}
-        run: |
-          flutter build apk --debug --build-number "$GITHUB_RUN_NUMBER" \
-            --dart-define="API_BASE_URL=$API_BASE_URL"
+        run: flutter build apk --debug --build-number "$GITHUB_RUN_NUMBER"
       - name: Prepare download and checksum
         run: |
           mkdir -p dist
@@ -56,9 +52,44 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+            bundle: build/linux/x64/release/bundle/
+          - os: windows-latest
+            target: windows
+            bundle: build/windows/x64/runner/Release/
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: flutter_app
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build ${{ matrix.target }} --release
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: desktop-${{ matrix.target }}
+          path: flutter_app/${{ matrix.bundle }}
+          if-no-files-found: error
+          retention-days: 14
+
   publish:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
-    needs: build
+    needs: [build, desktop]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -79,9 +110,11 @@ jobs:
           This is a universal **debug APK** for direct testing, not an app-store release.
           Build machines use different debug keys, so uninstall a previous build if Android rejects an update.
 
-          ## Connect your server
-          The APK is the Flutter client; the Python extraction API must run separately.
-          Open **Server connection** in the app and enter your API address (for example, http://192.168.1.10:8000 on your local network).
+          ## Runs on your phone
+          No server, Python installation, or account is required. Paste a supported novel URL,
+          extract chapters on your phone, and save the EPUB using the native file dialog.
+          Internet is needed to fetch chapters. Keep the app open during extraction and save
+          your EPUB before closing it. Saved books can be read offline in an EPUB reader.
           See the [setup instructions](https://github.com/$GH_REPO/blob/$GITHUB_SHA/README.md).
 
           Built from commit $GITHUB_SHA. The SHA-256 checksum is attached.

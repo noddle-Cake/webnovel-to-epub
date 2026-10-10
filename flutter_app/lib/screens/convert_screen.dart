@@ -1,24 +1,26 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+
+import '../data/local_novel_service.dart';
 
 import '../data/novel_api.dart';
 import '../theme.dart';
 import '../widgets/book_art.dart';
 
 class ConvertScreen extends StatefulWidget {
-  const ConvertScreen({super.key, this.api});
-  final NovelApi? api;
+  const ConvertScreen({super.key, this.service});
+  final NovelService? service;
   @override
   State<ConvertScreen> createState() => _ConvertScreenState();
 }
 
 class _ConvertScreenState extends State<ConvertScreen> {
-  late NovelApi _api;
-  bool _ownsApi = false;
+  late NovelService _service;
+  bool _ownsService = false;
   final _form = GlobalKey<FormState>();
   final _url = TextEditingController();
   final _title = TextEditingController();
@@ -43,14 +45,14 @@ class _ConvertScreenState extends State<ConvertScreen> {
   @override
   void initState() {
     super.initState();
-    _api = widget.api ?? NovelApi();
-    _ownsApi = widget.api == null;
+    _service = widget.service ?? (kIsWeb ? NovelApi() : LocalNovelService());
+    _ownsService = widget.service == null;
   }
 
   @override
   void dispose() {
     _generation++;
-    if (_ownsApi) _api.close();
+    if (_ownsService) _service.close();
     for (final controller in [_url, _title, _author, _chapter]) {
       controller.dispose();
     }
@@ -88,7 +90,7 @@ class _ConvertScreenState extends State<ConvertScreen> {
       _error = null;
     });
     try {
-      final metadata = await _api.detect(_url.text.trim());
+      final metadata = await _service.detect(_url.text.trim());
       if (!mounted) return;
       setState(() {
         _metadata = metadata;
@@ -143,7 +145,7 @@ class _ConvertScreenState extends State<ConvertScreen> {
       _cancelling = false;
     });
     try {
-      final id = await _api.extract(
+      final id = await _service.extract(
         url: _url.text.trim(),
         title: _title.text.trim(),
         author: _author.text.trim(),
@@ -173,7 +175,7 @@ class _ConvertScreenState extends State<ConvertScreen> {
     });
     try {
       while (mounted && generation == _generation) {
-        final job = await _api.job(_jobId!);
+        final job = await _service.job(_jobId!);
         if (!mounted || generation != _generation) return;
         setState(() {
           _job = job;
@@ -215,7 +217,7 @@ class _ConvertScreenState extends State<ConvertScreen> {
       _error = null;
     });
     try {
-      await _api.cancel(_jobId!);
+      await _service.cancel(_jobId!);
       if (mounted && !_polling) unawaited(_poll());
     } catch (error) {
       _showError(error);
@@ -225,7 +227,7 @@ class _ConvertScreenState extends State<ConvertScreen> {
 
   void _startOver() {
     final id = _jobId;
-    if (id != null) unawaited(_api.cancel(id).catchError((Object _) {}));
+    if (id != null) unawaited(_service.cancel(id).catchError((Object _) {}));
     setState(() {
       _generation++;
       _polling = false;
@@ -242,7 +244,7 @@ class _ConvertScreenState extends State<ConvertScreen> {
       _error = null;
     });
     try {
-      final bytes = await _api.download(_jobId!);
+      final bytes = await _service.download(_jobId!);
       if (!mounted) return;
       final name = (_exportTitle ?? 'novel').replaceAll(
         RegExp(r'[<>:"/\\|?*\x00-\x1f]'),
@@ -268,7 +270,9 @@ class _ConvertScreenState extends State<ConvertScreen> {
   }
 
   Future<void> _settings() async {
-    final controller = TextEditingController(text: _api.baseUrl);
+    final controller = TextEditingController(
+      text: (_service as NovelApi).baseUrl,
+    );
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -314,10 +318,10 @@ class _ConvertScreenState extends State<ConvertScreen> {
       _showError(const ApiException('Enter a valid server URL.'));
       return;
     }
-    if (_ownsApi) _api.close();
+    if (_ownsService) _service.close();
     setState(() {
-      _api = NovelApi(baseUrl: result);
-      _ownsApi = true;
+      _service = NovelApi(baseUrl: result);
+      _ownsService = true;
       _error = null;
       _job = null;
       _jobId = null;
@@ -431,11 +435,12 @@ class _ConvertScreenState extends State<ConvertScreen> {
             style: TextStyle(fontSize: 10, letterSpacing: 2, color: muted),
           ),
         ),
-      IconButton(
-        onPressed: _busy ? null : _settings,
-        tooltip: 'Server connection',
-        icon: const Icon(Icons.tune_rounded, size: 22),
-      ),
+      if (_service is NovelApi)
+        IconButton(
+          onPressed: _busy ? null : _settings,
+          tooltip: 'Server connection',
+          icon: const Icon(Icons.tune_rounded, size: 22),
+        ),
     ],
   );
 
@@ -1008,9 +1013,11 @@ class _ConvertScreenState extends State<ConvertScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Your download is available for one hour.',
-              style: TextStyle(fontSize: 10, color: muted),
+            Text(
+              _service is NovelApi
+                  ? 'Your download is available for one hour.'
+                  : 'Save your book before closing the app.',
+              style: const TextStyle(fontSize: 10, color: muted),
             ),
           ],
         ],

@@ -4,59 +4,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-class ApiException implements Exception {
-  const ApiException(this.message, {this.statusCode});
-  final int? statusCode;
-  final String message;
-  @override
-  String toString() => message;
-}
-
-class BookMetadata {
-  const BookMetadata({
-    this.title = '',
-    this.author = '',
-    this.firstChapter = '',
-    this.coverUrl,
-    this.description,
-  });
-  final String title;
-  final String author;
-  final String firstChapter;
-  final String? coverUrl;
-  final String? description;
-
-  factory BookMetadata.fromJson(Map<String, dynamic> json) => BookMetadata(
-    title: json['title'] as String? ?? '',
-    author: json['author'] as String? ?? '',
-    firstChapter: json['chapter_1'] as String? ?? '',
-    coverUrl: json['cover_url'] as String?,
-    description: json['description'] as String?,
-  );
-}
-
-class ExtractionJob {
-  const ExtractionJob({
-    required this.id,
-    required this.status,
-    this.chapters = 0,
-    this.chapterTitle = '',
-    this.error,
-  });
-  final String id;
-  final String status;
-  final int chapters;
-  final String chapterTitle;
-  final String? error;
-  bool get active => status == 'running' || status == 'queued';
-  factory ExtractionJob.fromJson(Map<String, dynamic> json) => ExtractionJob(
-    id: json['id'] as String,
-    status: json['status'] as String,
-    chapters: json['chapters'] as int? ?? 0,
-    chapterTitle: json['chapter_title'] as String? ?? '',
-    error: json['error'] as String?,
-  );
-}
+import 'novel_service.dart';
+export 'novel_service.dart';
 
 String defaultApiUrl() {
   const configured = String.fromEnvironment('API_BASE_URL');
@@ -69,7 +18,7 @@ String defaultApiUrl() {
       : 'http://localhost:8000';
 }
 
-class NovelApi {
+class NovelApi implements NovelService {
   NovelApi({String? baseUrl, http.Client? client})
     : baseUrl = baseUrl ?? defaultApiUrl(),
       _client = client ?? http.Client();
@@ -119,11 +68,13 @@ class NovelApi {
     }
   }
 
+  @override
   Future<BookMetadata> detect(String url) async => BookMetadata.fromJson(
     jsonDecode((await _request('POST', 'books/detect', {'url': url})).body)
         as Map<String, dynamic>,
   );
 
+  @override
   Future<String> extract({
     required String url,
     required String title,
@@ -141,15 +92,19 @@ class NovelApi {
     return (jsonDecode(response.body) as Map<String, dynamic>)['id'] as String;
   }
 
+  @override
   Future<ExtractionJob> job(String id) async => ExtractionJob.fromJson(
     jsonDecode((await _request('GET', 'jobs/$id')).body)
         as Map<String, dynamic>,
   );
+  @override
   Future<void> cancel(String id) async {
     await _request('DELETE', 'jobs/$id');
   }
 
+  @override
   Future<Uint8List> download(String id) async =>
       (await _request('GET', 'jobs/$id/download')).bodyBytes;
+  @override
   void close() => _client.close();
 }

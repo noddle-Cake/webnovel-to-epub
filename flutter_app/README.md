@@ -1,11 +1,17 @@
 # Chapter & Verse
 
-Flutter UI for the Novel to EPUB extraction API, targeting iOS, Android, and web.
-See the [repository README](../README.md) for setup, builds, and server configuration.
+Standalone Flutter app for Android, iOS, macOS, Windows, and Linux. Installed
+apps fetch supported novel sites directly and create EPUBs on the device.
+The optional browser client uses the Python API to avoid browser CORS limits.
+See the [repository README](../README.md) for setup and builds.
 
-- `lib/data/novel_api.dart`: API models, request encoding, and readable errors.
-- `lib/screens/convert_screen.dart`: metadata, cover selection, job progress, and export.
+- `lib/data/novel_service.dart`: shared models and service interface.
+- `lib/data/local_novel_service.dart`: native fetching, progress, cancellation.
+- `lib/data/site_extractors.dart`: pure site parsers and navigation guards.
+- `lib/data/epub_writer.dart`: EPUB 3 packaging and HTML-to-XHTML conversion.
+- `lib/data/novel_api.dart`: optional web API client.
+- `lib/screens/convert_screen.dart`: metadata, cover selection, progress, export.
 - `lib/widgets/book_art.dart`: offline book-jacket artwork.
 - `lib/theme.dart`: shared colors; `lib/main.dart`: app theme and entry point.
-- `test/`: API-client and responsive workflow tests.
+- `test/`: local extraction, EPUB structure, API, and responsive workflow tests.
 - `tool/preview_test.dart`: rendered phone and desktop previews.
