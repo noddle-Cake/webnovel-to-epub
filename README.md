@@ -9,23 +9,73 @@ The extractor reads the first-chapter button and follows explicit next links;
 the dynamically loaded chapter list is not needed. Image-only manga and pages
 without accessible novel text raise an error.
 
-## Run the API
+## Download for Android
 
-Python 3.10+ and Flutter 3.47+ are required. The old Streamlit and NiceGUI
-interfaces have been replaced by the Flutter app in `flutter_app/`.
+[![Download Android APK](https://img.shields.io/badge/Download-Android_APK-193E36?logo=android&logoColor=white)](https://github.com/noddle-Cake/webnovel-to-epub/releases/latest/download/chapter-and-verse.apk)
+
+**[Download the latest APK](https://github.com/noddle-Cake/webnovel-to-epub/releases/latest/download/chapter-and-verse.apk)** · [All releases and checksums](https://github.com/noddle-Cake/webnovel-to-epub/releases)
+
+Install the APK on your Android phone and open it. **No server or Python
+installation is needed.** The app fetches novels and creates EPUBs on your
+phone. Internet is needed to fetch chapters; saved EPUBs can be read offline.
+Android may ask you to allow installation from your browser. These are debug
+builds; uninstall the previous build if Android rejects an update because
+build machines use different debug signing keys.
+
+Merges affecting the app automatically build and publish a universal
+debug APK. The download link always points to the latest release, and a
+SHA-256 checksum accompanies each APK. The **Android APK** workflow can also
+be run manually from GitHub Actions on `master`.
+
+## Run the standalone app
+
+Install Flutter 3.47.7 or newer, then:
+
+```sh
+cd flutter_app
+flutter pub get
+flutter run -d macos       # on macOS
+flutter run -d windows     # on Windows
+flutter run -d linux       # on Linux
+flutter devices
+flutter run -d DEVICE_ID   # Android or iOS device / simulator
+```
+
+Native apps extract directly on the device. Paste a novel homepage, find its
+details, edit the title/author/starting chapter, optionally choose a JPEG or
+PNG cover, and create an EPUB. Save the finished book using the native file
+dialog. Keep the app open while extracting and save before closing or starting
+another book: jobs and unsaved EPUBs are held in memory, with one extraction
+at a time. Cancellation discards the result after the current request returns.
+
+Desktop builds require the platform's Flutter build tools. Android needs the
+Android SDK; iOS and macOS need Xcode. Build on the corresponding host:
+
+```sh
+flutter build apk --debug
+flutter build ios --release
+flutter build macos --release
+flutter build windows --release
+flutter build linux --release
+```
+
+iOS installation on physical devices requires your own Apple signing setup.
+Configure application identifiers and release signing before app-store
+publication. The downloadable Android package is a development/debug build.
+
+## Optional web client
+
+Browsers restrict requests to novel websites, so the web client uses the
+Python API. Native phone and desktop apps do not use this API.
+
+With Python 3.10+ installed, run from the repository root:
 
 ```sh
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn api.main:app --host 0.0.0.0 --port 8000
+uvicorn api.main:app --host 127.0.0.1 --port 8000
 ```
-
-The API retains the existing extraction service and site parsers. It exposes
-metadata detection, background extraction, chapter progress, cancellation,
-and EPUB downloads. API documentation: `http://localhost:8000/docs`.
-
-## Run Flutter
 
 In a second terminal:
 
@@ -35,58 +85,28 @@ flutter pub get
 flutter run -d chrome
 ```
 
-The interface, **Chapter & Verse**, adapts to phone and desktop screens. Paste
-a novel homepage, find its details, edit the title/author/starting chapter,
-optionally upload a JPEG or PNG cover, and create an EPUB. Progress shows the
-number of chapters collected. Save the finished book with the browser download
-or the native file dialog on iOS and Android.
+For a built web app, run `flutter build web --release`, then start/restart the
+API and open `http://localhost:8000`. It serves `flutter_app/build/web/`.
+Hosted web defaults to the same origin for its API; localhost defaults to
+`http://localhost:8000`. The web app's **Server connection** button changes
+that address. To host the app and API separately, build with
+`--dart-define=API_BASE_URL=https://your-api.example` and set
+`CORS_ORIGINS=https://your-web-app.example` on the API. `WEB_BUILD_DIR` overrides
+the static web directory. API documentation is at `/docs`.
 
-For a mobile simulator/emulator, choose its device ID from `flutter devices`:
-
-```sh
-flutter run -d DEVICE_ID
-```
-
-Local defaults are `http://localhost:8000` for web and the iOS simulator, and
-`http://10.0.2.2:8000` for the Android emulator. For physical phones, use the
-computer's local network address through the connection settings button, or
-configure it at launch:
-
-```sh
-flutter run -d DEVICE_ID --dart-define=API_BASE_URL=http://192.168.1.10:8000
-```
-
-The phone and server must be on the same network. Local HTTP is enabled in
-Android debug builds; use an HTTPS API for mobile release builds.
-
-## Build
-
-```sh
-cd flutter_app
-flutter build web --release
-flutter build apk --release --dart-define=API_BASE_URL=https://your-api.example
-flutter build ios --release --dart-define=API_BASE_URL=https://your-api.example
-```
-
-Android builds need the Android SDK and accepted licenses. iOS builds need
-Xcode and your signing configuration. Set your own application identifier and
-release signing before publishing to app stores; generated Android release
-configuration currently uses the development signing key.
-
-After building web, start/restart the API: it serves `flutter_app/build/web/`
-at `http://localhost:8000`. Hosted web defaults to the same origin for its API.
-To host the app and API separately, build with `--dart-define=API_BASE_URL=...`
-and set `CORS_ORIGINS=https://your-web-app.example` on the API. Localhost web
-origins are accepted for development. `WEB_BUILD_DIR` can override the static
-web build directory.
-
-Extraction jobs are kept in memory: run one API worker. Two extractions run
-concurrently, with at most 16 retained/queued jobs. Results expire one hour
-after completion; restarting the API clears jobs. Cancellation stops after
-the current page request returns. This is a personal/server-hosted app,
-with no persistent library or user accounts.
+The API keeps jobs in memory: run one worker. Two extractions run concurrently,
+with at most 16 retained/queued jobs; results expire after one hour. Restarting
+the API clears jobs. There is no persistent library or user account system.
 
 ## Add a site
+
+For native apps, implement `SiteExtractor` in
+`flutter_app/lib/data/site_extractors.dart` and register the exact host in
+`extractorFor`. Supply pure `book` and `chapter` parsers, update the novel-boundary
+validation, and add fixture tests in `flutter_app/test/`. Fetching, progress,
+cancellation, and EPUB packaging are shared and need no site-specific changes.
+
+For the optional Python/web service:
 
 1. Add a module in `extractors/` with a class inheriting `BaseExtractor`.
 2. Declare exact supported `hosts`, including `www` if appropriate.
@@ -131,3 +151,20 @@ flutter test tool/preview_test.dart --update-goldens
 Previews are saved in `flutter_app/screenshots/`. Bundled DM Sans and Fraunces
 fonts use the SIL Open Font License; their licenses are included alongside
 font assets.
+
+## Android download automation
+
+Pull requests run Flutter analysis, tests, an Android debug build, and native
+Windows/Linux release builds. Desktop bundles are available as workflow
+artifacts for 14 days (download the entire bundle). Pushes
+to `master` run the same checks and publish the APK and its SHA-256 checksum to
+GitHub Releases. Workflow actions and the Flutter SDK are pinned. Pull-request
+APKs are also available as workflow artifacts for 14 days.
+
+These are development/debug APKs, not app-store releases. No custom signing
+secrets are required. Debug signing keys differ across runners, so updating an
+installed APK may require uninstalling its previous version. Production
+signing with a stable private key can be configured separately.
+
+Builds use the workflow run number as Android's version code. Native builds
+contain the Dart extractors and EPUB writer; no backend address is configured.

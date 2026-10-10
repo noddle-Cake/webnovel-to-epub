@@ -70,12 +70,5 @@
 	<true/>
 	<key>UIFileSharingEnabled</key>
 	<true/>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Connect to your novel extraction server on your local network.</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
 </dict>
 </plist>

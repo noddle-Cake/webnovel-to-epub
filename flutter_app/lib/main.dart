@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import 'data/novel_api.dart';
+import 'data/novel_service.dart';
 import 'screens/convert_screen.dart';
 import 'theme.dart';
 
 void main() => runApp(const NovelApp());
 
 class NovelApp extends StatelessWidget {
-  const NovelApp({super.key, this.api});
-  final NovelApi? api;
+  const NovelApp({super.key, this.service});
+  final NovelService? service;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -68,6 +68,6 @@ class NovelApp extends StatelessWidget {
         ),
       ),
     ),
-    home: ConvertScreen(api: api),
+    home: ConvertScreen(service: service),
   );
 }

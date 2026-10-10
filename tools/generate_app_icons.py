@@ -50,10 +50,14 @@ if __name__ == '__main__':
     paths += [ROOT / 'web/favicon.png']
     paths += list((ROOT / 'android/app/src/main/res').glob('mipmap-*/ic_launcher.png'))
     paths += list((ROOT / 'ios/Runner/Assets.xcassets/AppIcon.appiconset').glob('*.png'))
+    paths += list((ROOT / 'macos/Runner/Assets.xcassets/AppIcon.appiconset').glob('*.png'))
     cache = {}
     for path in paths:
         size = struct.unpack('>I', path.read_bytes()[16:20])[0]
         if size not in cache:
             cache[size] = make_png(size)
         path.write_bytes(cache[size])
+    icon = make_png(256)
+    (ROOT / 'windows/runner/resources/app_icon.ico').write_bytes(
+        struct.pack('<HHH', 0, 1, 1) + struct.pack('<BBBBHHII', 0, 0, 0, 0, 1, 24, len(icon), 22) + icon)
     print(f'Generated {len(paths)} platform icons.')

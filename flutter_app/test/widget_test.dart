@@ -39,7 +39,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final api = fakeApi();
     addTearDown(api.close);
-    await tester.pumpWidget(NovelApp(api: api));
+    await tester.pumpWidget(NovelApp(service: api));
     expect(find.text('Chapter & Verse'), findsOneWidget);
     expect(find.text('Good stories.\nYours to keep.'), findsOneWidget);
     await tester.ensureVisible(find.byKey(const Key('create-epub')));
@@ -58,7 +58,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final api = fakeApi();
     addTearDown(api.close);
-    await tester.pumpWidget(NovelApp(api: api));
+    await tester.pumpWidget(NovelApp(service: api));
     await tester.enterText(
       find.byKey(const Key('novel-url')),
       'https://roliascan.com/manga/sample/',
@@ -82,7 +82,7 @@ void main() {
   testWidgets('API errors are shown without losing the form', (tester) async {
     final api = fakeApi(fail: true);
     addTearDown(api.close);
-    await tester.pumpWidget(NovelApp(api: api));
+    await tester.pumpWidget(NovelApp(service: api));
     await tester.enterText(
       find.byKey(const Key('novel-url')),
       'https://roliascan.com/manga/sample/',
@@ -109,7 +109,7 @@ void main() {
               .copyWith(textScaler: const TextScaler.linear(1.5)),
           child: child!,
         ),
-        home: NovelApp(api: api),
+        home: NovelApp(service: api),
       ),
     );
     await tester.ensureVisible(find.text('Upload a cover'));
@@ -128,7 +128,7 @@ void main() {
       }),
     );
     addTearDown(api.close);
-    await tester.pumpWidget(NovelApp(api: api));
+    await tester.pumpWidget(NovelApp(service: api));
     await tester.enterText(
       find.byKey(const Key('novel-url')),
       'https://roliascan.com/manga/sample/',
