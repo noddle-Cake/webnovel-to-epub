@@ -12,3 +12,5 @@ old/
 
 .idea/
 idea/
+.pytest_cache/
+.DS_Store

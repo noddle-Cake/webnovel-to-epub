@@ -12,7 +12,8 @@ class EpubBuilder:
         self.book.add_author(author)
 
         if cover_bytes:
-            self.book.set_cover("cover.jpg", cover_bytes)
+            extension = "png" if cover_bytes.startswith(b"\x89PNG\r\n\x1a\n") else "jpg"
+            self.book.set_cover(f"cover.{extension}", cover_bytes)
 
         title_page_html = f'''<html xmlns="http://www.w3.org/1999/xhtml">
         <head><title>Title Page</title></head>

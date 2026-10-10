@@ -1,0 +1,35 @@
+{
+    "name": "Chapter & Verse",
+    "short_name": "Chapter & Verse",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#193E36",
+    "theme_color": "#193E36",
+    "description": "Your favorite web novels, ready for your bookshelf.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
