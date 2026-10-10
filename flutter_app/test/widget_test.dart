@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:novel_to_epub/main.dart';
+import 'package:novel_to_epub/screens/convert_screen.dart';
+import 'package:novel_to_epub/theme.dart';
 import 'package:novel_to_epub/data/novel_api.dart';
 
 NovelApi fakeApi({bool fail = false}) => NovelApi(
@@ -39,9 +40,13 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final api = fakeApi();
     addTearDown(api.close);
-    await tester.pumpWidget(NovelApp(service: api));
-    expect(find.text('Chapter & Verse'), findsOneWidget);
-    expect(find.text('Good stories.\nYours to keep.'), findsOneWidget);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: novelTheme(Brightness.light),
+        home: ConvertScreen(service: api),
+      ),
+    );
+    expect(find.text('Take your story with you'), findsOneWidget);
     await tester.ensureVisible(find.byKey(const Key('create-epub')));
     await tester.tap(find.byKey(const Key('create-epub')));
     await tester.pumpAndSettle();
@@ -58,7 +63,12 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final api = fakeApi();
     addTearDown(api.close);
-    await tester.pumpWidget(NovelApp(service: api));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: novelTheme(Brightness.light),
+        home: ConvertScreen(service: api),
+      ),
+    );
     await tester.enterText(
       find.byKey(const Key('novel-url')),
       'https://roliascan.com/manga/sample/',
@@ -82,7 +92,12 @@ void main() {
   testWidgets('API errors are shown without losing the form', (tester) async {
     final api = fakeApi(fail: true);
     addTearDown(api.close);
-    await tester.pumpWidget(NovelApp(service: api));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: novelTheme(Brightness.light),
+        home: ConvertScreen(service: api),
+      ),
+    );
     await tester.enterText(
       find.byKey(const Key('novel-url')),
       'https://roliascan.com/manga/sample/',
@@ -109,7 +124,10 @@ void main() {
               .copyWith(textScaler: const TextScaler.linear(1.5)),
           child: child!,
         ),
-        home: NovelApp(service: api),
+        home: MaterialApp(
+          theme: novelTheme(Brightness.light),
+          home: ConvertScreen(service: api),
+        ),
       ),
     );
     await tester.ensureVisible(find.text('Upload a cover'));
@@ -128,7 +146,12 @@ void main() {
       }),
     );
     addTearDown(api.close);
-    await tester.pumpWidget(NovelApp(service: api));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: novelTheme(Brightness.light),
+        home: ConvertScreen(service: api),
+      ),
+    );
     await tester.enterText(
       find.byKey(const Key('novel-url')),
       'https://roliascan.com/manga/sample/',

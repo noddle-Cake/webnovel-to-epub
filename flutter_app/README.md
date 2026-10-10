@@ -5,6 +5,9 @@ apps fetch supported novel sites directly and create EPUBs on the device.
 The optional browser client uses the Python API to avoid browser CORS limits.
 See the [repository README](../README.md) for setup and builds.
 
+- `lib/library/`: local UI library, navigation, novel details, and source browsing.
+- `lib/theme.dart`: light, dark, and monochrome e-reader themes.
+- `DESIGN.md`: Mihon design references and scope for the future reader.
 - `lib/data/novel_service.dart`: shared models and service interface.
 - `lib/data/local_novel_service.dart`: native fetching, progress, cancellation.
 - `lib/data/site_extractors.dart`: pure site parsers and navigation guards.

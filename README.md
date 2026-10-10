@@ -27,6 +27,26 @@ debug APK. The download link always points to the latest release, and a
 SHA-256 checksum accompanies each APK. The **Android APK** workflow can also
 be run manually from GitHub Actions on `master`.
 
+## Light-novel library UI
+
+The Flutter app uses a Mihon-inspired library layout with cover grids or lists,
+search, sorting, and **Plan to read / Reading / Completed** shelves. Add a novel
+from **Browse → Add novel URL**, open its details, and choose **Create EPUB**.
+**More → Create an EPUB** also opens the standalone export tool.
+
+Library metadata, shelves, recently opened novels, and appearance preferences
+are saved locally. History records opened detail pages, not chapter reading.
+The chapter list, update checking, and in-app reader are planned for the next
+phase; their screens clearly indicate this. No sample books are installed.
+
+Choose **Appearance** in the toolbar or More to select **Follow system**,
+**Light**, **Dark**, **E-reader light**, or **E-reader dark**. E-reader modes
+provide grayscale visuals, black/white surfaces, stronger contrast, and reduced
+motion. They do not control hardware e-ink refresh behavior.
+
+Phone navigation becomes a side rail on desktop. The design reference and
+scope are documented in [flutter_app/DESIGN.md](flutter_app/DESIGN.md).
+
 ## Run the standalone app
 
 Install Flutter 3.47.7 or newer, then:
@@ -96,7 +116,8 @@ the static web directory. API documentation is at `/docs`.
 
 The API keeps jobs in memory: run one worker. Two extractions run concurrently,
 with at most 16 retained/queued jobs; results expire after one hour. Restarting
-the API clears jobs. There is no persistent library or user account system.
+the API clears jobs. The web UI saves its library metadata in browser storage; server jobs are
+separate and temporary. There is no user account system.
 
 ## Add a site
 
