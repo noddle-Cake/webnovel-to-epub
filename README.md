@@ -10,9 +10,9 @@ without accessible novel text raise an error.
 
 ## Download for Android
 
-[![Download Android APK](https://img.shields.io/badge/Download-Android_APK-193E36?logo=android&logoColor=white)](https://github.com/noddle-Cake/webnovel-to-epub/releases/latest/download/chapter-and-verse.apk)
+[![Download Android APK](https://img.shields.io/badge/Download-Android_APK-193E36?logo=android&logoColor=white)](https://github.com/noddle-Cake/Moonleaf/releases/latest/download/chapter-and-verse.apk)
 
-**[Download the latest APK](https://github.com/noddle-Cake/webnovel-to-epub/releases/latest/download/chapter-and-verse.apk)** · [All releases and checksums](https://github.com/noddle-Cake/webnovel-to-epub/releases)
+**[Download the latest APK](https://github.com/noddle-Cake/Moonleaf/releases/latest/download/chapter-and-verse.apk)** · [All releases and checksums](https://github.com/noddle-Cake/Moonleaf/releases)
 
 Install the APK on your Android phone and open it. **No server or Python
 installation is needed.** The app fetches novels and creates EPUBs on your
