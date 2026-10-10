@@ -12,6 +12,7 @@ import 'package:novel_to_epub/data/novel_service.dart';
 import 'package:novel_to_epub/data/site_extractors.dart';
 import 'package:novel_to_epub/data/epub_writer.dart';
 import 'package:novel_to_epub/main.dart';
+import 'package:novel_to_epub/library/library_store.dart';
 
 const bookUrl = 'https://roliascan.com/manga/sample/';
 const first = 'https://roliascan.com/read/sample/ch1/';
@@ -33,7 +34,7 @@ Future<ExtractionJob> finish(LocalNovelService service, String id) async {
 
 void main() {
   testWidgets('native app has no server connection setup', (tester) async {
-    await tester.pumpWidget(const NovelApp());
+    await tester.pumpWidget(NovelApp(store: LibraryStore()));
     expect(find.byTooltip('Server connection'), findsNothing);
   });
   test('local metadata, chapter requests and EPUB need no API', () async {
