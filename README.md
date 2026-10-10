@@ -9,6 +9,23 @@ The extractor reads the first-chapter button and follows explicit next links;
 the dynamically loaded chapter list is not needed. Image-only manga and pages
 without accessible novel text raise an error.
 
+## Download for Android
+
+[![Download Android APK](https://img.shields.io/badge/Download-Android_APK-193E36?logo=android&logoColor=white)](https://github.com/noddle-Cake/webnovel-to-epub/releases/latest/download/chapter-and-verse.apk)
+
+**[Download the latest APK](https://github.com/noddle-Cake/webnovel-to-epub/releases/latest/download/chapter-and-verse.apk)** · [All releases and checksums](https://github.com/noddle-Cake/webnovel-to-epub/releases)
+
+Install the APK on your Android phone, then open **Server connection** in the
+app and enter your extraction API address (for example, `http://192.168.1.10:8000`). The APK is the client; run the
+Python API separately using the instructions below. Android may ask you to
+allow installation from your browser. These are debug builds. Build machines use different debug signing keys, so
+uninstall a previous build first if Android rejects an update.
+
+Merges affecting the app automatically build and publish a universal
+debug APK. The download link always points to the latest release, and a
+SHA-256 checksum accompanies each APK. The **Android APK** workflow can also
+be run manually from GitHub Actions on `master`.
+
 ## Run the API
 
 Python 3.10+ and Flutter 3.47+ are required. The old Streamlit and NiceGUI
@@ -70,8 +87,8 @@ flutter build ios --release --dart-define=API_BASE_URL=https://your-api.example
 
 Android builds need the Android SDK and accepted licenses. iOS builds need
 Xcode and your signing configuration. Set your own application identifier and
-release signing before publishing to app stores; generated Android release
-configuration currently uses the development signing key.
+release signing before publishing to app stores; local Android release
+builds use a development key unless release signing is configured.
 
 After building web, start/restart the API: it serves `flutter_app/build/web/`
 at `http://localhost:8000`. Hosted web defaults to the same origin for its API.
@@ -131,3 +148,20 @@ flutter test tool/preview_test.dart --update-goldens
 Previews are saved in `flutter_app/screenshots/`. Bundled DM Sans and Fraunces
 fonts use the SIL Open Font License; their licenses are included alongside
 font assets.
+
+## Android download automation
+
+Pull requests run Flutter analysis, tests, and an Android debug build. Pushes
+to `master` run the same checks and publish the APK and its SHA-256 checksum to
+GitHub Releases. Workflow actions and the Flutter SDK are pinned. Pull-request
+APKs are also available as workflow artifacts for 14 days.
+
+These are development/debug APKs, not app-store releases. No custom signing
+secrets are required. Debug signing keys differ across runners, so updating an
+installed APK may require uninstalling its previous version. Production
+signing with a stable private key can be configured separately.
+
+Optionally set repository variable `API_BASE_URL` to preconfigure the backend
+address. Users can also set it in the app. Builds use the workflow run number
+as Android's version code. The Python backend still needs to run separately;
+the APK does not bundle the server or extractors.
