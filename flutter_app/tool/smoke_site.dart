@@ -8,11 +8,12 @@ import 'package:novel_to_epub/data/site_extractors.dart';
 import 'package:novel_to_epub/data/epub_writer.dart';
 
 Future<void> main(List<String> args) async {
-  final url = Uri.parse(
-    args.isEmpty
-        ? 'https://roliascan.com/manga/the-regressor-and-the-blind-saint-novel/'
-        : args.single,
-  );
+  if (args.length != 1) {
+    stderr.writeln('Usage: dart run tool/smoke_site.dart <novel-url>');
+    exitCode = 64;
+    return;
+  }
+  final url = Uri.parse(args.single);
   final client = http.Client();
   try {
     Future<String> fetch(Uri uri) async {

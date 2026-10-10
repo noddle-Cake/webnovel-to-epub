@@ -17,3 +17,7 @@ Appearance supports system, light, dark, e-reader light, and e-reader dark.
 E-reader appearances use grayscale rendering, black/white surfaces, increased
 contrast, and reduced animation. These are visual modes, not device-specific
 e-ink refresh controls. All modes will be reusable by the future reader.
+
+First-run libraries and published previews are empty. Do not seed books, use
+personal reading selections in examples, or capture an existing user's library
+for screenshots. Live smoke checks require an explicitly supplied URL.

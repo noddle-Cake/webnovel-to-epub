@@ -1,19 +1,18 @@
-# Light Novel Extractor
+# Moonleaf
 
 Convert supported web novels to EPUB while preserving chapter formatting.
 Currently supports Royal Road and RoliaScan text novels.
 
-For RoliaScan, paste the novel landing page, for example:
-`https://roliascan.com/manga/the-regressor-and-the-blind-saint-novel/`.
+For RoliaScan, paste the landing-page URL of a novel you choose.
 The extractor reads the first-chapter button and follows explicit next links;
 the dynamically loaded chapter list is not needed. Image-only manga and pages
 without accessible novel text raise an error.
 
 ## Download for Android
 
-[![Download Android APK](https://img.shields.io/badge/Download-Android_APK-193E36?logo=android&logoColor=white)](https://github.com/noddle-Cake/webnovel-to-epub/releases/latest/download/chapter-and-verse.apk)
+[![Download Android APK](https://img.shields.io/badge/Download-Android_APK-193E36?logo=android&logoColor=white)](https://github.com/noddle-Cake/Moonleaf/releases/latest/download/chapter-and-verse.apk)
 
-**[Download the latest APK](https://github.com/noddle-Cake/webnovel-to-epub/releases/latest/download/chapter-and-verse.apk)** · [All releases and checksums](https://github.com/noddle-Cake/webnovel-to-epub/releases)
+**[Download the latest APK](https://github.com/noddle-Cake/Moonleaf/releases/latest/download/chapter-and-verse.apk)** · [All releases and checksums](https://github.com/noddle-Cake/Moonleaf/releases)
 
 Install the APK on your Android phone and open it. **No server or Python
 installation is needed.** The app fetches novels and creates EPUBs on your

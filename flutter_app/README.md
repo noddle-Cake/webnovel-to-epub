@@ -1,4 +1,4 @@
-# Chapter & Verse
+# Moonleaf
 
 Standalone Flutter app for Android, iOS, macOS, Windows, and Linux. Installed
 apps fetch supported novel sites directly and create EPUBs on the device.

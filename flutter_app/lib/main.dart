@@ -91,7 +91,7 @@ class _NovelAppState extends State<NovelApp> {
             mode == AppAppearance.ereaderLight ||
             mode == AppAppearance.ereaderDark;
         return MaterialApp(
-          title: 'Chapter & Verse',
+          title: 'Moonleaf',
           debugShowCheckedModeBanner: false,
           theme: novelTheme(Brightness.light, ereader: ereader),
           darkTheme: novelTheme(Brightness.dark, ereader: ereader),
