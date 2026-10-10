@@ -1,4 +1,5 @@
-nicegui==3.6.1
-ebooklib
-beautifulsoup4
-requests
+fastapi==0.143.0
+uvicorn[standard]==0.54.0
+ebooklib==0.20
+beautifulsoup4==4.15.0
+requests==2.34.2
